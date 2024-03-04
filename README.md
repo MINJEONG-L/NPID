@@ -1,5 +1,3 @@
-# NPID  
-
 ## Background  
 ### class  
   - An object or group of objects with similar properties  
@@ -62,8 +60,52 @@
                 - Making it more scalable for big data aplications
       
 #### Noise-contrastive estimation  
+  - Prohibitive cost with non-parametric softmax in the situation where n is very large
+      - Using Noise-contrastive estimation to approximate the full softmax
+  - Casting the multi-class classification into the binary classification
+      - Discriminating between data samples and noise samples
+  - Formalizing the noise distribution as a uniform distribution: $𝑷_𝒏=𝟏/𝒏$
+  - Assuming that noise samples are $𝒎$ times more frequent than data samples
+  - $𝒉(𝒊,𝒗)≔𝑷(𝑫=𝟏│𝒊,𝒗)=(𝑷(𝒊│𝒗))/(𝑷(𝒊│𝒗)+𝒎𝑷_𝒏 (𝒊) $
+      - Posterior probability of sample 𝒊 with feature 𝒗 being from the data distribution  
+      - Correction of the probability that a 𝒊 and 𝒗 are from the data distribution to the probability that they are from the noise distribution  
+      - Training objective is to minimize the negative log-posterior distribution of data and noise sample.  
+      - $𝑱_𝑵𝑪𝑬 (𝜽)=−𝑬_(𝑷_𝒅 ) [𝐥𝐨𝐠𝒉(𝒊, 𝒗)]−𝒎·〖𝑬_𝑷〗_𝒏 [𝐥𝐨𝐠⁡(𝟏 − 𝒉(𝒊, 𝒗 ′))]$
+          - $𝑷_𝒅$: actual data distribution  
+          - $𝑷_𝒏$: noise distribution 
+          - $𝒗′$: feature from randomly sampled according to $𝑷_𝒏$
 
+#### Proximal Regularization  
+  - Only having one instance per class unlike typical classification settings where each class has many instances
+      - Oscillating learning process with lack of learning or long time to convergence
+  - Solving by the proximal regularization method
+      - Introducing an additional term to encourage the smoothness of the training dynamics
+    ![image](https://github.com/MINJEONG-L/NPID/assets/82145878/e7f341c2-215b-4339-8e49-eca8bf073944)
 
-
-
-
+  - $𝑱_𝑵𝑪𝑬 (𝜽)=−𝑬_(𝑷_𝒅 ) [𝐥𝐨𝐠𝒉(𝒊,𝒗_𝒊^((𝒕−𝟏) ) )−𝝀‖𝒗_𝒊^((𝒕) )−𝒗_𝒊^((𝒕−𝟏) ) ‖_𝟐^𝟐 ]−𝒎 ⋅〖𝑬_𝑷〗_𝒏 [𝐥𝐨𝐠(𝟏−𝒉(𝒊,𝒗^′(𝒕−𝟏)  ))]$
+      - 𝒕: current iteration  
+      - 𝝀: proximal regularization impact degree
+   
+#### Weighted k-Nearest Neighbor Classifier 
+  - Using Weighted K-Nearest Neighbor Classifier as model for differentiating test images
+  - Process for classifying test image 𝒙 ̂
+      1. Computing 𝒇 ̂=𝒇_𝜽 (𝒙 ̂) and comparing it against the embeddings in the memory bank using the cosine similarity 𝒔_𝒊  
+        - 𝒔_𝒊=𝒄𝒐𝒔⁡(𝒗_𝒊,𝒇 ̂)  
+      2. Selecting the top 𝒌 nearest neighbors denoted by 𝑵_𝒌  
+        - Making the prediction via weighted voting  
+      3. Computing the contributing weight of neighbor 𝒙_𝒊  
+        - 𝜶_𝒊=𝒆𝒙𝒑⁡(𝒔_𝒊/𝝉)  
+      4. Getting a total weight 𝒘_𝒄, classifying as the highest value class  
+        - 𝒘_𝒄=∑_𝒋▒𝜶_𝒊 ⋅𝟏(𝒄_𝒊=𝒄)
+### Experiments  
+#### Parametric vs. Non-parametric Softmax  
+  - Parametric softmax
+      - Obtaining accuracy of 60.3% and 63.0% with linear SVM* and kNN* classifiers respectively  
+  - Non-parametric softmax
+      - Rising accuracy to 75.4% and 80.8% for the linear and nearest neighbor classifiers  
+  - NCE* approximating non-parametric softmax
+       - Controlling the approximation using m  
+       - When m = 4,096, the accuracy approaches that at m = 49,999 – full form evaluation without any approximation
+           - Providing assurance that NCE is an efficient approximation.  
+    ![image](https://github.com/MINJEONG-L/NPID/assets/82145878/88be13c2-ff1f-446b-a9a6-728d38a39d50)  
+    
