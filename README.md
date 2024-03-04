@@ -58,7 +58,12 @@
     - Discussions
         - Better generalization performance
             - Learning feature presentation and the corresponding metric, not a specific class
-            - 
+            - Eliminating the need for computing and storing the gradients for {$𝒘_𝒋$}
+                - Making it more scalable for big data aplications
+      
+#### Noise-contrastive estimation  
 
-        
+
+
+
 
